@@ -51,6 +51,9 @@ int retry = 6;
 
 int date = 1, utime =0, gmt=0;
 
+int ext_trigger = 1;
+
+
 void usage(void)
 {
   printf("\ntty_talk version %s\n", VERSION);
@@ -341,7 +344,27 @@ TABDLY BSDLY VTDLY FFDLY
 	  io[idx++] = '\r';
 	}
 
-#if NOT_READY	
+
+
+#if 1
+	/* Reset 42 57 02 00 FF FF FF FF */
+
+	if(1)  {
+	  io[0] = 0x42;
+	  io[1] = 0x57;
+	  io[2] = 0x02;
+	  io[3] = 0x00;
+	  io[4] = 0xFF;
+	  io[5] = 0xFF;
+	  io[6] = 0xFF;
+	  res = write(fd, io, 7);
+	  
+	  if(res < 0 ) {
+	    perror("write 0 failed");
+	    goto error;
+	  }
+	}
+	  
 	  /* Config open 42 57 02 00 00 00 01 02 */
 	
 	  if(1)  {
@@ -355,19 +378,9 @@ TABDLY BSDLY VTDLY FFDLY
 	    res = write(fd, io, 7);
 
 	    if(res < 0 ) {
-	      perror("write failed");
+	      perror("write 1 failed");
 	      goto error;
 	    }
-
-	    if ((res = read(fd, &mes.buf, 7)) != 7) {
-	      perror("read config start failed");
-	      goto error;
-	    }
-
-	    for(i=0; i < 7; i++)  {
-	      printf("%d %02X\n", i, mes.buf[i]);
-	    }
-
 	  }
 
 	  /* Range limit disabled 42 57 02 00 00 00 00 19 */
@@ -384,20 +397,32 @@ TABDLY BSDLY VTDLY FFDLY
 	    res = write(fd, io, 8);
 
 	    if(res < 0 ) {
-	      perror("write failed");
-	      goto error;
-	    }
-	    
-	    if ((res = read(fd, &mes.buf, 8)) != 8) {
-	      perror("read config failed");
+	      perror("write 2 failed");
 	      goto error;
 	    }
 	  }
 
-	  
+	  /*  42 57 02 00 00 00 00 40 External trigger */
+	  if(ext_trigger)  {
+	    io[0] = 0x42;
+	    io[1] = 0x57;
+	    io[2] = 0x02;
+	    io[3] = 0x00;
+	    io[4] = 0x00;
+	    io[5] = 0x00;
+	    io[6] = 0x00;
+	    io[7] = 0x40;
+	    res = write(fd, io, 8);
+
+	    if(res < 0 ) {
+	      perror("write 3 failed");
+	      goto error;
+	    }
+	  }
+
 	  /* Config close 42 57 02 01 00 00 00 02,*/
 	  
-	  if(1)  {
+	  if(0)  {
 	    io[0] = 0x42;
 	    io[1] = 0x57;
 	    io[2] = 0x02;
@@ -408,7 +433,7 @@ TABDLY BSDLY VTDLY FFDLY
 	    res = write(fd, io, 7);
 
 	    if(res < 0 ) {
-	      perror("write failed");
+	      perror("write 4 failed");
 	      goto error;
 	    }
 	    if ((res = read(fd, &mes.buf, 7)) != 7) {
@@ -419,6 +444,25 @@ TABDLY BSDLY VTDLY FFDLY
 
 #endif	  
 	while(1) {
+
+	  sleep(1);
+
+	  if(ext_trigger)  {
+	    io[0] = 0x42;
+	    io[1] = 0x57;
+	    io[2] = 0x02;
+	    io[3] = 0x00;
+	    io[4] = 0x00;
+	    io[5] = 0x00;
+	    io[6] = 0x00;
+	    io[7] = 0x41;
+	    res = write(fd, io, 8);
+
+	    if(res < 0 ) {
+	      perror("write 3 failed");
+	      goto error;
+	    }
+	  }
 	  
 	  if ((res = read(fd, &mes.buf[0], 1)) != 1) {
 	    continue;

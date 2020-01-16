@@ -1,0 +1,2 @@
+./tf01demo /dev/ttyUSB0  115200
+2019-10-09 14:35:54 Dist=   30 Signal=  222 Mode= 3
