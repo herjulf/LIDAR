@@ -51,7 +51,7 @@ int retry = 6;
 
 int date = 1, utime =0, gmt=0;
 
-int ext_trigger = 1;
+int ext_trigger = 0;
 
 
 void usage(void)
@@ -357,7 +357,8 @@ TABDLY BSDLY VTDLY FFDLY
 	  io[4] = 0xFF;
 	  io[5] = 0xFF;
 	  io[6] = 0xFF;
-	  res = write(fd, io, 7);
+	  io[7] = 0xFF;
+	  res = write(fd, io, 8);
 	  
 	  if(res < 0 ) {
 	    perror("write 0 failed");
@@ -373,9 +374,10 @@ TABDLY BSDLY VTDLY FFDLY
 	    io[2] = 0x02;
 	    io[3] = 0x00;
 	    io[4] = 0x00;
-	    io[5] = 0x01;
-	    io[6] = 0x02;
-	    res = write(fd, io, 7);
+	    io[5] = 0x00;
+	    io[6] = 0x01;
+	    io[7] = 0x02;
+	    res = write(fd, io, 8);
 
 	    if(res < 0 ) {
 	      perror("write 1 failed");
@@ -429,8 +431,9 @@ TABDLY BSDLY VTDLY FFDLY
 	    io[3] = 0x00;
 	    io[4] = 0x00;
 	    io[5] = 0x00;
-	    io[6] = 0x02;
-	    res = write(fd, io, 7);
+	    io[6] = 0x00;
+	    io[7] = 0x02;
+	    res = write(fd, io, 8);
 
 	    if(res < 0 ) {
 	      perror("write 4 failed");
@@ -445,7 +448,7 @@ TABDLY BSDLY VTDLY FFDLY
 #endif	  
 	while(1) {
 
-	  sleep(1);
+	  //sleep(1);
 
 	  if(ext_trigger)  {
 	    io[0] = 0x42;
