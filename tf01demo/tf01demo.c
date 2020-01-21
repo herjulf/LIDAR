@@ -495,14 +495,21 @@ TABDLY BSDLY VTDLY FFDLY
 
 	  if(mes.buf[8] == csum((unsigned char*)&mes, 8)) {
 	    uint16_t dist, signal;
+	    int temp;
 
 	    dist = mes.buf[2] + mes.buf[3]*256;
 	    signal = mes.buf[4] + mes.buf[5]*256;
-	  
 	    print_date(buf); 
 	    printf("%s", buf);
 
-	    printf("Dist=%5u Signal=%5u Mode=%2u", dist, signal, mes.buf[6]);
+	    if(mes.buf[7] == 0) {
+	      printf("Dist=%5u Signal=%5u Mode=%2u", dist, signal, mes.buf[6]);
+	    }
+	    else {
+	      temp = mes.buf[6] + mes.buf[7]*256;
+	      temp = temp/8 -256;
+	      printf("Dist=%5u Signal=%5u Temp=%-d", dist, signal, temp);
+	    }
 
 	    printf("\r");
 	    fflush(stdout);
