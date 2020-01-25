@@ -208,13 +208,6 @@ void print_date(char *datebuf)
   }
 }
 
-
-/* put terminal in raw mode - see termio(7I) for modes */
-void tty_raw(void)
-{
-
-}
-
 int main(int ac, char *av[]) 
 {
 	struct termios tp, old;
@@ -225,7 +218,6 @@ int main(int ac, char *av[])
 	int i, len, idx;
 	unsigned char buffer_RTT[8] = {};
 	int YCTa = 0, YCTb = 0, YCT1 = 0;
-	int j;
 
        	if(ac == 1) 
 	  usage();
@@ -277,12 +269,6 @@ int main(int ac, char *av[])
 	}
 
 
-
-#if 1
-	//struct termios tp;
-  
- //tp = orig_termios;  /* copy original and then modify below */
-  
   /* input modes - clear indicated ones giving: no break, no CR to NL, 
      no parity check, no strip char, no start/stop output (sic) control */
    tp.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INPCK | ISTRIP | IXON);
@@ -314,45 +300,6 @@ int main(int ac, char *av[])
 	/* put terminal in raw mode after flushing */
   if (tcsetattr(fd, TCSAFLUSH, &tp) < 0) error("can't set raw mode");
 
-#else
-tp.c_cflag |= ( CLOCAL | CREAD );
- 
-  // Set the Charactor size
- 
-  tp.c_cflag &= ~CSIZE; /* Mask the character size bits */
-  tp.c_cflag |= CS8;    /* Select 8 data bits */
- 
-  // Set parity - No Parity (8N1)
-   
-  tp.c_cflag &= ~PARENB;
-  tp.c_cflag &= ~CSTOPB;
-  tp.c_cflag &= ~CSIZE;
-  tp.c_cflag |= CS8;
- 
-  // Disable Hardware flowcontrol
- 
-  //tp.c_cflag &= ~CNEW_RTSCTS;  -- not supported
- 
-  // Enable Raw Input
-   
-  tp.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
- 
-  // Disable Software Flow control
- 
-  tp.c_iflag &= ~(IXON | IXOFF | IXANY);
- 
-  // Chose raw (not processed) output
- 
-  tp.c_oflag &= ~OPOST;
-
-	
-	/* set output and input baud rates */
-
-	if (tcsetattr(fd, TCSANOW, &tp) < 0) {
-		perror("Couldn't set term attributes");
-		goto error;
-	}
-#endif
 	
 	for(idx = 0, i = 2; i < ac; i++) {
 	  len = strlen(av[i]);
@@ -364,7 +311,7 @@ tp.c_cflag |= ( CLOCAL | CREAD );
 #define NOB 8
 	while(1) {
 
-	  /* Read the incoming data */
+	  /* Read the RADAR data */
 
 	  res = read(fd, &buffer_RTT, NOB);
 
@@ -383,17 +330,20 @@ tp.c_cflag |= ( CLOCAL | CREAD );
 	  
 	    if(buffer_RTT[1] == 0xff){
 	      if(buffer_RTT[2] == 0xff){
+		/* Calc obstacle distance of maximum reflection intensity */
 		YCTa = buffer_RTT[3];      
 		YCTb = buffer_RTT[4];
 		YCT1 = (YCTa << 8) + YCTb;               
 	      }
-	    }//Read the obstacle distance of maximum reflection intensity
+	    }
 
+	    if (tcsetattr(fd, TCSAFLUSH, &tp) < 0) error("can't set raw mode");
+	    
 	    printf("Dist=%5u", YCT1);
-	    //printf("\r");
 	    printf("\n");
+
 	next:;
-	}/* while(1) */
+	} /* while(1) */
 
 	if (tcsetattr(fd, TCSANOW, &old) < 0) {
 		perror("Couldn't restore term attributes");
